@@ -33,13 +33,6 @@ func StartEndpoint(serverAddr string, port int, informRemote <-chan string, upda
 	for {
 		select {
 		case now := <-buf:
-			if client == nil {
-				client, err = rpc.DialHTTP("tcp", fmt.Sprintf("%s:%d", serverAddr, port))
-				if err != nil {
-					log.Printf("connect to remote server[%s] failed: %s\n",
-						fmt.Sprintf("%s:%d", serverAddr, port), err)
-				}
-			}
 			if now == current {
 				log.Printf("same as previous content[%q]\n", now)
 				continue
@@ -47,12 +40,19 @@ func StartEndpoint(serverAddr string, port int, informRemote <-chan string, upda
 			current = now
 			updateFromRemote <- current
 		case s := <-informRemote:
-			if s == current {
-				log.Printf("remote is same as request[%q], skip it\n", s)
-				continue
+			if client == nil {
+				client, err = rpc.DialHTTP("tcp", fmt.Sprintf("%s:%d", serverAddr, port))
+				if err != nil {
+					log.Printf("try to connect to remote server[%s] failed: %s\n",
+						fmt.Sprintf("%s:%d", serverAddr, port), err)
+				}
 			}
 			if client == nil {
 				log.Println("remote isn't up, skip it")
+				continue
+			}
+			if s == current {
+				log.Printf("remote is same as request[%q], skip it\n", s)
 				continue
 			}
 			err := client.Call("Proxy.Update", s, nil)
