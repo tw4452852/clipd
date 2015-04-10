@@ -45,6 +45,11 @@ func StartEndpoint(serverAddr string, port int, informRemote <-chan string, upda
 				if err != nil {
 					log.Printf("try to connect to remote server[%s] failed: %s\n",
 						fmt.Sprintf("%s:%d", serverAddr, port), err)
+				} else {
+					if debug {
+						log.Printf("remote[%s] is connected\n",
+							fmt.Sprintf("%s:%d", serverAddr, port))
+					}
 				}
 			}
 			if client == nil {
