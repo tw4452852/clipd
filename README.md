@@ -1,0 +1,2 @@
+# clipd
+A clipboard daemon
